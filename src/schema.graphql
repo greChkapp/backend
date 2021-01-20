@@ -1,0 +1,23 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  listProducts(input: ListProductsInput!): [ListProductsType!]
+}
+
+type Mutation {
+  listProduct(input: ListProductsInput!): [ListProductsType!]
+}
+
+input ListProductsInput {
+  limit: Int!
+  skip: Int!
+}
+
+type ListProductsType {
+  name: String
+  weight: Int
+  price: String
+}
