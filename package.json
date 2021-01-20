@@ -11,8 +11,11 @@
   "license": "ISC",
   "dependencies": {
     "apollo-server": "^2.19.2",
+    "axios": "^0.21.1",
     "graphql": "^15.4.0",
-    "mongoose": "^5.11.12"
+    "mongoose": "^5.11.12",
+    "node-html-parser": "^2.0.2",
+    "puppeteer": "^5.5.0"
   },
   "devDependencies": {
     "@types/node": "^14.14.21",

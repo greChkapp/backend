@@ -3,11 +3,14 @@ import fs from 'fs';
 import { initMongoClient } from './dbConnection';
 import * as Query from './query';
 import * as Mutation from './mutation';
+import { parser } from './helper/queue/shops/ashan';
 
 const resolvers = {
   ...Mutation,
   ...Query,
 } as IResolvers;
+
+parser('https://auchan.zakaz.ua/ru/categories/pulses-and-grain-auchan/');
 
 const typeDefs = gql(fs.readFileSync(__dirname.concat('/schema.graphql'), 'utf8'));
 const configApollo = {
