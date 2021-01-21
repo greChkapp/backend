@@ -12,6 +12,7 @@
   "dependencies": {
     "apollo-server": "^2.19.2",
     "axios": "^0.21.1",
+    "bull": "^3.20.0",
     "graphql": "^15.4.0",
     "mongoose": "^5.11.12",
     "node-html-parser": "^2.0.2",
