@@ -6,6 +6,9 @@ export const productSchema = new Schema(
     name: String,
     weight: Number,
     price: String,
+    brand: String,
+    country: String,
+    image: String,
   },
   {
     timestamps: true,
