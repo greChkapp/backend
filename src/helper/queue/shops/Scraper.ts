@@ -1,14 +1,8 @@
 import axios from 'axios';
 import { HTMLElement, parse } from 'node-html-parser';
-
-type ProductType = {
-  name: string;
-  price: string;
-  image: string;
-  brand?: string;
-  weight?: string;
-  country?: string;
-};
+import CreateUpdateProduct from './CreateUpdateProduct';
+import { GetProductType } from '../../../types/products';
+import { blackList } from './blackList';
 
 export default class Scraper {
   readonly values = {
@@ -53,17 +47,16 @@ export default class Scraper {
             const { classNames } = category;
             return !classNames.includes(subCategoryLinkClass);
           });
-
     // TODO Make blackList for some categories
+    const filteredCategories = categories.filter(category => !blackList.includes(category.rawAttributes.href));
 
-    return categories;
+    return filteredCategories;
   }
 
   private async scrapeProducts(categoryUrl: string) {
     let currentPage = 0;
     let document: HTMLElement | Document;
     console.log(categoryUrl);
-
     do {
       currentPage += 1;
 
@@ -71,11 +64,17 @@ export default class Scraper {
       document = parse(content.data);
 
       const productsLinks = await this.processProductsLinks(document);
+      const products:Promise<void>[] = [];
       for (const link of productsLinks) {
         try {
           const scrapedProduct = await this.scrapeProduct(link);
-          const product = await this.changeData(scrapedProduct);
+          const product: GetProductType = await this.changeData(scrapedProduct);
           console.log(product);
+          // const createProduct = new CreateUpdateProduct(product);
+          // products.push(createProduct.checkProduct());
+          // if (products.length === 100) {
+          //   await Promise.all(products);
+          // }
         } catch (error) {
           console.log(error);
         }
@@ -105,10 +104,19 @@ export default class Scraper {
   }
 
   private async changeData (product) {
-    const { name, brand } = product;
+    const { brand, price, weight } = product;
+    let { name } = product;
     for (const symbol in this.symbols) {
-      product.name = name.replace(symbol, this.symbols[symbol]);
-      product.brand = brand && brand.replace(symbol, this.symbols[symbol]);
+      name = name.replace(symbol, this.symbols[symbol]);
+      product.brand = brand && brand.replace(symbol, this.symbols[symbol]) || null;
+    }
+    const nameWeightPosition = name.search(/\s\d/);
+    if (nameWeightPosition !== -1) {
+      product.name = name.slice(0, nameWeightPosition);
+    }
+    product.price = parseFloat(price);
+    if (weight) {
+      product.weight = weight.indexOf(/(\s(г|мл))$/g) ? parseInt(weight, 10) : parseInt(weight, 10) * 1000;
     }
 
     return product;

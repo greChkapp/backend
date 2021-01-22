@@ -5,7 +5,7 @@ export const productSchema = new Schema(
   {
     name: String,
     weight: Number,
-    price: String,
+    price: { type: Schema.Types.ObjectId, ref: 'Prices' },
     brand: String,
     country: String,
     image: String,

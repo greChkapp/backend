@@ -1,8 +1,11 @@
 
 type GetProductType = {
-  weight: number;
   name: string;
-  price: string;
+  price: number;
+  image: string;
+  brand?: string;
+  weight?: number;
+  country?: string;
 };
 
 export { GetProductType };
