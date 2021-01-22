@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { parse } from 'node-html-parser';
+import { HTMLElement, parse } from 'node-html-parser';
 
 type ProductType = {
   name: string;
@@ -9,115 +9,114 @@ type ProductType = {
   weight?: string;
   country?: string;
 };
-export default class AshanShop {
-  readonly mainUrl: string;
-  readonly siteUrlPrefix: string;
-  readonly lastPage: string = 'pagination__direction_disabled';
+
+export default class Scraper {
   readonly values = {
-    Бренд: 'brand',
-    Вес: 'weight',
+    Бренд:  'brand',
+    Вес:    'weight',
     Страна: 'country',
   };
-  private products:ProductType[] = [];
-  constructor(mainUrl: string, siteUrlPrefix: string) {
-    this.mainUrl = mainUrl;
-    this.siteUrlPrefix = siteUrlPrefix;
-  }
 
-  async parseAshanShop() {
-    await this.parseAshanShopHelper();
-    return;
-  }
+  constructor(readonly url: string, readonly local: string) {}
 
-  private async parseAshanShopHelper() {
-    await this.parser();
-  }
+  async scrape_() {
+    const content = await axios.get(`${this.url}/${this.local}`);
+    const document = parse(content.data);
 
-  private async parser() {
-    const content = await axios.get(this.mainUrl);
-    const root = parse(content.data);
-    const links = root.querySelectorAll('.CategoriesMenuListItem__link').filter(data => !data.classNames.includes('CategoriesMenuListItem__link_withChildren'));
+    // Scrape all categories from the menu at the main page of the site
+    const categories = this.scrapeCategories(document);
 
-    for (const link of links) {
-      const { href } = link.rawAttributes;
-
-      await this.getLinks(href);
+     // Scrape all products from the categories page
+    for (const category of categories) {
+      const { href } = category.rawAttributes;
+      await this.scrapeProducts(href);
     }
   }
-  private async getLinks(url: string) {
-    let currentUrl = url;
-    let count = 1;
 
-    while (1) {
-      const content = await axios.get(`${this.siteUrlPrefix}${currentUrl}`);
-      const { products, pages } = await this.parseHtmlLink(content.data);
-      const currentPage = parse(content.data);
-      for (const link of products) {
+  private scrapeCategories(document: HTMLElement): HTMLElement[] {
+    // The class of the main category that the menu consists of
+    const categoryClass = '.CategoriesMenuListItem';
+    // Root link for categories
+    const categoryLinkClass    = `${categoryClass}__link`;
+    // Link for sub categories
+    const subCategoryLinkClass = `${categoryLinkClass}_withChildren`;
+
+    const categories = document
+      .querySelectorAll(categoryLinkClass)
+      .filter(
+          (category) => {
+            const { classNames } = category;
+            return !classNames.includes(subCategoryLinkClass);
+          });
+
+    // TODO Make blackList for some categories
+
+    return categories;
+  }
+
+  private async scrapeProducts(categoryUrl: string) {
+    let currentPage = 0;
+    let document: HTMLElement | Document;
+    console.log(categoryUrl);
+
+    do {
+      currentPage += 1;
+
+      const content = await axios.get(`${this.url}${categoryUrl}?page=${currentPage}`);
+      document = parse(content.data);
+
+      const productsLinks = await this.processProductsLinks(document);
+      for (const link of productsLinks) {
         try {
-          await this.grabOneProduct(link);
+          await this.scrapeProduct(link);
         } catch (error) {
           console.log(error);
         }
       }
-      // tslint:disable-next-line: no-increment-decrement
-      count++;
-      console.log('currentUrl: ', currentUrl);
-      const tablePagination = currentPage.querySelector('.pagination');
-      const lastPageSelector = tablePagination && tablePagination.querySelectorAll('li').pop();
-
-      if (!lastPageSelector || lastPageSelector.rawAttributes.class.includes(this.lastPage)) {
-        break;
-      } else {
-        currentUrl = `${url}?page=${count}`;
-      }
-    }
+    } while (this.checkCategoryEnd(document));
   }
 
-  private async parseHtmlLink(result) {
-    const content = parse(result);
+  private checkCategoryEnd(document: HTMLElement) {
+    const paginationTable = document.querySelectorAll('.pagination li');
+    const paginationDirection = paginationTable?.pop();
 
-    const links = content.querySelectorAll('a');
-
-    const resultLinks = {
-      products: [],
-      pages: [],
-    };
-    for (const link of links) {
-      const linkAttrs = link.rawAttributes;
-      if (linkAttrs.class && linkAttrs.class.includes('product-tile')) {
-        resultLinks.products.push(linkAttrs.href);
-      }
-      if (linkAttrs.class && linkAttrs.class.includes('pagination__item')) {
-        resultLinks.pages.push(linkAttrs.href);
-      }
-    }
-    return resultLinks;
+    return paginationDirection &&
+      !paginationDirection.classNames.includes('pagination__direction_disabled');
   }
 
-  private async grabOneProduct (link: string) {
-    const content = await axios.get(`${this.siteUrlPrefix}${link}`);
+  private async processProductsLinks(document: HTMLElement) {
+    const rawProductsLinks = document.querySelectorAll('.product-tile');
 
-    const resData = await this.parseHtmlData(content.data);
-    console.log(resData);
+    const productsLinks: string[] = [];
+
+    for (const link of rawProductsLinks) {
+      const { href } = link.rawAttributes;
+      productsLinks.push(href);
+    }
+
+    return productsLinks;
   }
 
-  private async parseHtmlData(result) {
-    const content = parse(result);
+  private async scrapeProduct(productLink: string) {
+    const content = await axios.get(`${this.url}${productLink}`);
+    const document = parse(content.data);
 
-    const name = content.querySelector('.big-product-card__title').innerText;
-    const price = content.querySelector('.big-product-card__price').querySelector('span').innerText;
-    const images = content.querySelectorAll('img');
-    let productImage = '';
+    const name  = document.querySelector('.big-product-card__title')?.innerText;
+    const price = document.querySelector('.Price__value_title')?.innerText;
 
-    for (const image of images) {
-      const imageAttrs = image.rawAttributes;
-      if (imageAttrs.title && imageAttrs.title.includes(name)) {
-        productImage = imageAttrs.src;
-        break;
-      }
-    }
-    const tableInfo = content.querySelector('.big-product-card__general-info');
-    const infoRaws = tableInfo.querySelectorAll('li');
+    const productImage = document.querySelector('.ZooomableImageSwitcher__smallImg')?.rawAttributes.src;
+
+    // for (const image of images) {
+    //   const imageAttrs = image.rawAttributes;
+    //   if (imageAttrs.title && imageAttrs.title.includes(name)) {
+    //     productImage = imageAttrs.src;
+    //     break;
+    //   }
+    // }
+
+
+    const tableInfo = document.querySelector('.big-product-card__general-info');
+    const infoRaws  = tableInfo.querySelectorAll('li');
     const resultObj = {
       price,
       name,
@@ -132,6 +131,7 @@ export default class AshanShop {
         resultObj[params] = value;
       }
     }
-    return resultObj;
+
+    console.log(resultObj);
   }
 }
