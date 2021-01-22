@@ -122,7 +122,6 @@ export default class Scraper {
     const price = document.querySelector('.Price__value_title')?.innerText;
 
     const productImage = document.querySelector('.ZooomableImageSwitcher__smallImg')?.rawAttributes.src;
-
     const tableInfo = document.querySelector('.big-product-card__general-info');
     const infoRaws  = tableInfo.querySelectorAll('li');
     const resultObj = {
