@@ -70,11 +70,11 @@ export default class Scraper {
           const scrapedProduct = await this.scrapeProduct(link);
           const product: GetProductType = await this.changeData(scrapedProduct);
           console.log(product);
-          // const createProduct = new CreateUpdateProduct(product);
-          // products.push(createProduct.checkProduct());
-          // if (products.length === 100) {
-          //   await Promise.all(products);
-          // }
+          const createProduct = new CreateUpdateProduct(product);
+          products.push(createProduct.checkProduct());
+          if (products.length === 1) {
+            await Promise.all(products);
+          }
         } catch (error) {
           console.log(error);
         }

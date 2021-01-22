@@ -24,9 +24,9 @@ export default class CreateUpdateProduct {
   private async createProduct() {
     this.currentProduct = new Product(this.product);
     await this.createPrice();
-    this.currentProduct = this.price._id;
+    this.currentProduct.price = this.price._id;
 
-    this.currentProduct.save();
+    await this.currentProduct.save();
   }
 
   private async updateProduct() {
