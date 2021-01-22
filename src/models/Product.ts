@@ -9,6 +9,7 @@ export const productSchema = new Schema(
     brand: String,
     country: String,
     image: String,
+    shop: String,
   },
   {
     timestamps: true,

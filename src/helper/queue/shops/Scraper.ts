@@ -15,7 +15,7 @@ export default class Scraper {
     '&#x27;': '\'',
   };
 
-  constructor(readonly url: string, readonly local: string) {}
+  constructor(readonly url: string, readonly local: string, readonly shop: string) {}
 
   async scrape_() {
     const content = await axios.get(`${this.url}/${this.local}`);
@@ -72,13 +72,11 @@ export default class Scraper {
           console.log(product);
           const createProduct = new CreateUpdateProduct(product);
           products.push(createProduct.checkProduct());
-          if (products.length === 1) {
-            await Promise.all(products);
-          }
         } catch (error) {
           console.log(error);
         }
       }
+      await Promise.all(products);
     } while (this.checkCategoryEnd(document));
   }
 
@@ -116,9 +114,9 @@ export default class Scraper {
     }
     product.price = parseFloat(price);
     if (weight) {
-      console.log(weight);
       product.weight = /(\s(г|мл))$/g.test(weight) ? this.parseWeight(weight, 1) : this.parseWeight(weight, 1000);
     }
+    product.shop = this.shop;
 
     return product;
   }

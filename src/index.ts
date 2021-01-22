@@ -33,15 +33,15 @@ const configApollo = {
 (async () => {
   await initMongoClient();
   const apolloServer = new ApolloServerLocal(configApollo);
-  apolloServer.listen(4010).then(({ url }) => {
+  apolloServer.listen(4000).then(({ url }) => {
     console.log(`Server ready at ${url}`);
-    const ashanScraper = new Scraper('https://auchan.zakaz.ua', 'ru');
-    (async () => {
-      try {
-        await ashanScraper.scrape_();
-      } catch (err) {
-        console.log(err);
-      }
-    })();
+    const ashanScraper = new Scraper('https://auchan.zakaz.ua', 'ru', 'Ashan');
+    // (async () => {
+    //   try {
+    //     await ashanScraper.scrape_();
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // })();
   });
 })();

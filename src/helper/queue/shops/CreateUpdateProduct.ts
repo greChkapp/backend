@@ -11,8 +11,8 @@ export default class CreateUpdateProduct {
   }
 
   async checkProduct() {
-    const { name } = this.product;
-    this.currentProduct = await Product.findOne({ name });
+    const { name, weight } = this.product;
+    this.currentProduct = await Product.findOne({ name, weight });
 
     if (this.currentProduct) {
       await this.updateProduct();
