@@ -13,6 +13,10 @@ export default class AshanShop {
   readonly mainUrl: string;
   readonly siteUrlPrefix: string;
   readonly lastPage: string = 'pagination__direction_disabled';
+  readonly symvols = {
+    '&amp;': '&',
+    '&#x27;': '\'',
+  }
   readonly values = {
     Бренд: 'brand',
     Вес: 'weight',
@@ -95,9 +99,15 @@ export default class AshanShop {
   }
 
   private async grabOneProduct (link: string) {
-    const content = await axios.get(`${this.siteUrlPrefix}${link}`);
+    const content = await axios.get(`${this.siteUrlPrefix}${link}`); 
 
-    const resData = await this.parseHtmlData(content.data);
+    const resData:ProductType = await this.parseHtmlData(content.data);
+    for (let i in this.symvols){
+      resData.name = resData.name.replace(i,this.symvols[i]);
+      if (resData.brand != null){
+      resData.brand = resData.brand && resData.brand.replace(i,this.symvols[i]);
+      }
+    }
     console.log(resData);
   }
 
