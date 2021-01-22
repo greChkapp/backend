@@ -3,7 +3,7 @@ import fs from 'fs';
 import { initMongoClient } from './dbConnection';
 import * as Query from './query';
 import * as Mutation from './mutation';
-import AshanShop from './helper/queue/shops/AshanShop';
+import Scraper from './helper/queue/shops/Scraper';
 
 const resolvers = {
   ...Mutation,
@@ -11,10 +11,16 @@ const resolvers = {
 } as IResolvers;
 
 // parser('https://auchan.zakaz.ua/ru/categories/pulses-and-grain-auchan/');
-const parseShop = new AshanShop('https://auchan.zakaz.ua/ru/', 'https://auchan.zakaz.ua');
+// const parseShop = new AshanShop('https://auchan.zakaz.ua/ru/', 'https://auchan.zakaz.ua');
+
+const ashanScraper = new Scraper('https://auchan.zakaz.ua', 'ru');
 
 (async () => {
-  await parseShop.parseAshanShop();
+  try {
+    await ashanScraper.scrape_();
+  } catch (err) {
+    console.log(err);
+  }
 })();
 // const typeDefs = gql(fs.readFileSync(__dirname.concat('/schema.graphql'), 'utf8'));
 // const configApollo = {
