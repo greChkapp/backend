@@ -116,10 +116,19 @@ export default class Scraper {
     }
     product.price = parseFloat(price);
     if (weight) {
-      product.weight = weight.indexOf(/(\s(г|мл))$/g) ? parseInt(weight, 10) : parseInt(weight, 10) * 1000;
+      console.log(weight);
+      product.weight = /(\s(г|мл))$/g.test(weight) ? this.parseWeight(weight, 1) : this.parseWeight(weight, 1000);
     }
 
     return product;
+  }
+
+  private parseWeight (raw, count: number) {
+    const digitRaw = raw.match(/\d?[,.]?\d+/)[0];
+    const digit = digitRaw.replace(',', '.');
+    const weight = parseFloat(digit);
+
+    return weight * count;
   }
 
   private async scrapeProduct(productLink: string) {
