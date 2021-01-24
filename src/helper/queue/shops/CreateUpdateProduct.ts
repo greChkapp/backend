@@ -6,13 +6,13 @@ export default class CreateUpdateProduct {
   readonly product: GetProductType;
   private currentProduct;
   private price;
-  constructor(product: GetProductType) {
+  constructor(product) {
     this.product = product;
   }
 
   async checkProduct() {
-    const { name, weight } = this.product;
-    this.currentProduct = await Product.findOne({ name, weight });
+    const { name, weight, shop } = this.product;
+    this.currentProduct = await Product.findOne({ name, weight, shop });
 
     if (this.currentProduct) {
       await this.updateProduct();
@@ -37,11 +37,23 @@ export default class CreateUpdateProduct {
   }
 
   private async createPrice() {
-    const { price } = this.product;
-    this.price = new Prices({
-      price,
-      product: this.currentProduct._id,
-    });
-    this.price.save();
+    const startDay = new Date();
+    const endDay = new Date();
+    startDay.setHours(0, 0, 0, 0);
+    endDay.setHours(23, 59, 59, 999);
+    const { _id: productId } = this.currentProduct;
+
+    this.price = await Prices.findOne({ product: productId, createdAt: {
+      $gte: startDay.toISOString(),
+      $lt: endDay.toISOString(),
+    }});
+    if (!this.price) {
+      const { price } = this.product;
+      this.price = new Prices({
+        price,
+        product: this.currentProduct._id,
+      });
+      this.price.save();
+    }
   }
 }

@@ -3,7 +3,7 @@ import fs from 'fs';
 import { initMongoClient } from './dbConnection';
 import * as Query from './query';
 import * as Mutation from './mutation';
-import Scraper from './helper/queue/shops/Scraper';
+import './helper/queue/bull';
 
 const resolvers = {
   ...Mutation,
@@ -35,13 +35,5 @@ const configApollo = {
   const apolloServer = new ApolloServerLocal(configApollo);
   apolloServer.listen(4000).then(({ url }) => {
     console.log(`Server ready at ${url}`);
-    const ashanScraper = new Scraper('https://auchan.zakaz.ua', 'ru', 'Ashan');
-    // (async () => {
-    //   try {
-    //     await ashanScraper.scrape_();
-    //   } catch (err) {
-    //     console.log(err);
-    //   }
-    // })();
   });
 })();
