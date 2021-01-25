@@ -11,15 +11,25 @@ export default class ScraperProducts {
     let document: HTMLElement | Document;
     // console.log(this.categoryUrl);
     do {
+      if(currentPage >= 40) {
+        break;
+      }
       currentPage += 1;
+      let content;
+      console.log(`${this.url}${this.categoryUrl}?page=${currentPage}`);
+      try {
+        content = await axios.get(`${this.url}${this.categoryUrl}?page=${currentPage}`);
+      } catch (error) {
+        console.log('error', error);
+        break;
+      }
 
-      const content = await axios.get(`${this.url}${this.categoryUrl}?page=${currentPage}`);
       document = parse(content.data);
 
       const productsLinks = await this.processProductsLinks(document);
       this.links.push(...productsLinks);
     } while (this.checkCategoryEnd(document));
-
+    console.log('links', this.links.length);
     return this.links;
   }
 

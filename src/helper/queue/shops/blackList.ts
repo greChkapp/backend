@@ -1,5 +1,8 @@
 export const blackList = [
   '/ru/promotions/',
+  '/ru/categories/cheese-auchan/',
+  '/ru/categories/milk-auchan/',
+  '/ru/categories/curd-auchan/',
   '/ru/categories/tobacco-goods-auchan/',
   '/ru/categories/cigarettes-auchan/',
   '/ru/categories/cigars-auchan/',

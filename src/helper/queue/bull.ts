@@ -15,25 +15,25 @@ import {   settings,
 export const shopQueue = new bull('shop', { redis, defaultJobOptions, settings, limiter });
 export const productQueue = new bull('product', { redis, defaultJobOptions, settings, limiter });
 
-shopQueue.process('ashan', async (job) => {
+shopQueue.process('ashan', 1, async (job) => {
   const categoriesLength = await createProcess(job.data);
 
   return categoriesLength;
 });
 
-shopQueue.process('novus', async (job) => {
+shopQueue.process('novus', 1, async (job) => {
   const categoriesLength = await createProcess(job.data);
 
   return categoriesLength;
 });
 
-shopQueue.process('megaMarket', async (job) => {
+shopQueue.process('megaMarket', 1, async (job) => {
   const categoriesLength = await createProcess(job.data);
 
   return categoriesLength;
 });
 
-productQueue.process('products', async (job) => {
+productQueue.process('products', 4, async (job) => {
   const { products: productsLink, shop, url } = job.data;
   // console.log('product process started');
   const startDate = new Date().getTime();
@@ -53,6 +53,11 @@ shopQueue.on('completed', (job, result) => {
   job.remove();
 });
 
+shopQueue.on('failed', (job) => {
+  // job has failed
+  console.log('Job shopQueue failed');
+});
+
 productQueue.on('completed', (job, result) => {
   console.log('Job completed:');
   console.table(result);
@@ -69,11 +74,16 @@ const createProcess = async ({ url, local, shop }) => {
 
   const categoryScraped = new Scraper(url, local);
   const categoriesLinks = await categoryScraped.scrape_();
+  let count = 0;
   for (const category of categoriesLinks) {
-    const scrapedProducts = new ScraperProductsLink(url, category);
-    const products = await scrapedProducts.scrapeProducts();
-    // console.log(products.length);
-    productQueue.add('products', { shop, url, products });
+    count += 1;
+    if (count > 103) {
+      console.log('category', category);
+      const scrapedProducts = new ScraperProductsLink(url, category);
+      const products = await scrapedProducts.scrapeProducts();
+        // console.log(products.length);
+      productQueue.add('products', { shop, url, products });
+    }
   }
 
   return categoriesLinks.length;

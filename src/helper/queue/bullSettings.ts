@@ -4,9 +4,8 @@ const defaultJobOptions = {
 };
 
 const redis = {
-  host: 'redis-14750.c52.us-east-1-4.ec2.cloud.redislabs.com',
-  port: 14750,
-  password: 'RTGd18n3Jyjgd93KUdVAtCSAj6R05tID',
+  host: 'localhost',
+  port: 6379,
   maxRetriesPerRequest: null,
   connectTimeout: 180000,
 };
@@ -27,7 +26,7 @@ const settings = {
 };
 
 const options = {
-  repeat: { cron: '33 14 * * *' },
+  repeat: { cron: '36 22 * * *' },
 };
 
 const ashanData = {
