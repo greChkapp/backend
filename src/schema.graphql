@@ -4,20 +4,57 @@ schema {
 }
 
 type Query {
-  listProducts(input: ListProductsInput!): [ListProductsType!]
+  listProducts(input: ListProductsInput!): [ProductType!]
+  productPrices(input: PriceProductsInput!): [PriceProductsType!]
 }
 
 type Mutation {
-  listProduct(input: ListProductsInput!): [ListProductsType!]
+  listProduct(input: ListProductsInput!): [ProductType!]
 }
 
 input ListProductsInput {
   limit: Int!
   skip: Int!
+  filter: filterDataType!
 }
 
-type ListProductsType {
-  name: String
+input PriceProductsInput {
+  productId: ID!
+}
+
+type PriceProductsType {
+  id: ID!
+  product: ProductTypeForPrice
+  price: Float!
+  createdAt: String!
+}
+
+type ProductTypeForPrice {
+  id: ID!
+  name: String!
   weight: Int
-  price: String
+  country: String
+  shop: String
+  brand: String
+}
+
+input filterDataType {
+  name: String
+  shop: String
+}
+
+type ProductType {
+  id: ID!
+  name: String!
+  weight: Int
+  price: PriceType
+  country: String
+  shop: String
+  brand: String
+}
+
+type PriceType {
+  id: ID!
+  price: Float!
+  createdAt: String!
 }

@@ -1,8 +1,14 @@
+import { ObjectId } from 'mongoose';
 
 type GetProductType = {
-  weight: number;
+  _id: ObjectId
   name: string;
-  price: string;
+  price: number;
+  image: string;
+  shop: string;
+  brand?: string;
+  weight?: number;
+  country?: string;
 };
 
 export { GetProductType };
