@@ -11,7 +11,7 @@ export default class ScraperProducts {
     let document: HTMLElement | Document;
     // console.log(this.categoryUrl);
     do {
-      if(currentPage >= 40) {
+      if (currentPage >= 40) {
         break;
       }
       currentPage += 1;
